@@ -10,13 +10,13 @@ export function Stock() {
           id: 1,
           name: "Branca",
           price: 10,
-          quantity: 10,
+          quantity: 3,
         },
         {
           id: 2,
           name: "Azul",
           price: 20,
-          quantity: 10,
+          quantity: 3,
         }
       ],
     },

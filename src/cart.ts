@@ -72,9 +72,14 @@ export function Cart(cartOptions: CartOptions) {
     const { productId, variantId, quantity } = options;
 
     const product = findCartProduct({ productId, variantId });
+    const variant = cartOptions.stock.getProductVariant(productId, variantId);
 
     if (!product) {
       throw new Error(`Product with id ${productId} and variant id ${variantId} not found`);
+    }
+
+    if (quantity > variant.quantity) {
+      throw new Error(`Product with id ${productId} and variant id ${variantId} has only ${variant.quantity} quantity`);
     }
 
     product.quantity = quantity;
@@ -117,8 +122,13 @@ export function Cart(cartOptions: CartOptions) {
     voucher = findedVoucher;
   }
 
+  function getVoucher(): Voucher | undefined {
+    return voucher;
+  }
+
   return {
     cartItems,
+    getVoucher,
     addProduct,
     removeProduct,
     changeProductQuantity,

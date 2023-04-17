@@ -1,11 +1,13 @@
 import { Stock } from "./stock";
 import { Cart } from "./cart";
 
+import { UpdateViewFunction, ViewsEnum } from "./types";
+
 type CartViewOptions = {
   stock: ReturnType<typeof Stock>;
   cart: ReturnType<typeof Cart>;
   element: HTMLElement;
-  updateView: () => void;
+  updateView: UpdateViewFunction;
 }
 
 export function CartView(cartViewOptions: CartViewOptions) {
@@ -26,11 +28,13 @@ export function CartView(cartViewOptions: CartViewOptions) {
         if (!cartProduct) return;
 
         if (cartProduct.quantity === 1) {
+
           cartViewOptions.cart.removeProduct({
             productId,
             variantId
           });
         } else {
+
           cartViewOptions.cart.changeProductQuantity({
             productId,
             variantId,
@@ -97,7 +101,7 @@ export function CartView(cartViewOptions: CartViewOptions) {
 
         cartViewOptions.cart.applyVoucher(voucher.value);
 
-        cartViewOptions.updateView();
+        cartViewOptions.updateView(ViewsEnum.CART);
       });
     });
   }
@@ -105,25 +109,31 @@ export function CartView(cartViewOptions: CartViewOptions) {
   function update() {
     cartViewOptions.element.innerHTML = `
       <h2>Cart</h2>
-    `; 
+    `;
 
-    cartViewOptions.cart.cartItems.forEach(cartItem => {
+    if (cartViewOptions.cart.cartItems.length) {
+      cartViewOptions.cart.cartItems.forEach(cartItem => {
+        cartViewOptions.element.innerHTML += `
+          <div class="card" data-productId="${cartItem.id}" data-variantId="${cartItem.variantId}">
+            ${ cartItem.name } - ${ cartViewOptions.stock.getProductVariant(cartItem.id, cartItem.variantId).name } - R$ ${ cartItem.price }
+            <button class="descrease">-</button>
+            <span>${ cartItem.quantity }</span>
+            <button class="increase">+</button>
+            <button class="remove">Remove</button>
+          </div>
+        `;
+      });
+    } else {
       cartViewOptions.element.innerHTML += `
-        <div class="card" data-productId="${cartItem.id}" data-variantId="${cartItem.variantId}">
-          ${ cartItem.name } - ${ cartViewOptions.stock.getProductVariant(cartItem.id, cartItem.variantId).name }
-          <button class="descrease">-</button>
-          <span>${ cartItem.quantity }</span>
-          <button class="increase">+</button>
-          <button class="remove">Remove</button>
-        </div>
+        <p>Cart is empty</p>
       `;
-    });
+    }
 
     cartViewOptions.element.innerHTML += `
       <form>
         <fieldset>
           <legend>Voucher</legend>
-          <input class="voucher" />
+          <input class="voucher" value="${ cartViewOptions.cart.getVoucher()?.code || "" }" required/>
           <button type="submit">Apply</button>
         </fieldset>
       </form>

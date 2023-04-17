@@ -1,11 +1,13 @@
 import { Stock } from "./stock";
 import { Cart } from "./cart";
 
+import { UpdateViewFunction, ViewsEnum } from "./types";
+
 type StockViewOptions = {
   stock: ReturnType<typeof Stock>;
   cart: ReturnType<typeof Cart>;
   element: HTMLElement;
-  updateView: () => void;
+  updateView: UpdateViewFunction;
 }
 
 export function StockView(stockViewOptions: StockViewOptions) {
@@ -38,7 +40,8 @@ export function StockView(stockViewOptions: StockViewOptions) {
             quantity: 1
           });
         }
-        stockViewOptions.updateView();       
+
+        stockViewOptions.updateView(ViewsEnum.CART);       
       });
     });
   }
