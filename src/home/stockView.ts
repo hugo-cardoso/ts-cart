@@ -1,7 +1,7 @@
-import { Stock } from "./stock";
-import { Cart } from "./cart";
+import { Stock } from "../global/stock";
+import { Cart } from "../global/cart";
 
-import { UpdateViewFunction, ViewsEnum } from "./types";
+import { UpdateViewFunction } from "./types";
 
 type StockViewOptions = {
   stock: ReturnType<typeof Stock>;
@@ -20,28 +20,7 @@ export function StockView(stockViewOptions: StockViewOptions) {
         const productId = Number(card.getAttribute("data-productId"));
         const variantId = Number(card.querySelector("select")!.value);
 
-        const cartProduct = stockViewOptions.cart.findCartProduct({
-          productId,
-          variantId
-        });
-
-        if (cartProduct) {
-
-          stockViewOptions.cart.changeProductQuantity({
-            productId,
-            variantId,
-            quantity: cartProduct.quantity + 1
-          });
-        } else {
-
-          stockViewOptions.cart.addProduct({
-            productId,
-            variantId,
-            quantity: 1
-          });
-        }
-
-        stockViewOptions.updateView(ViewsEnum.CART);       
+        window.location.href = `/product.html?productId=${productId}&variantId=${variantId}`;      
       });
     });
   }
@@ -63,7 +42,7 @@ export function StockView(stockViewOptions: StockViewOptions) {
               }).join("")
             }
           </select>
-          <button>ADD</button>
+          <button>VIEW</button>
         </div>
       `;
     });

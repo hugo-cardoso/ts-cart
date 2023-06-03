@@ -27,14 +27,14 @@ type CartOptions = {
 }
 
 export function Cart(cartOptions: CartOptions) {
-  const cartItems: CartItem[] = [];
+  const cartItems: CartItem[] = getLocalStorageCartItems();
   const vouchers: Voucher[] = [
     {
       code: "VOUCHER1",
       discount: 10,
     }
   ];
-  let voucher: Voucher;
+  let voucher: Voucher | undefined = getLocalStorageVoucher();
 
   function addProduct(options: AddProductOptions) {
     const { productId, variantId, quantity } = options;
@@ -45,15 +45,31 @@ export function Cart(cartOptions: CartOptions) {
       throw new Error(`Product with id ${productId} and variant id ${variantId} not found`);
     }
 
-    const { product, variant } = findedProduct;
+    const cartProduct = findCartProduct({ productId, variantId });
 
-    cartItems.push({
-      id: product.id,
-      name: product.name,
-      price: variant.price,
-      quantity,
-      variantId,
-    });
+    if (cartProduct) {
+
+      changeProductQuantity({
+        productId,
+        variantId,
+        quantity: cartProduct.quantity + quantity,
+      });
+
+    } else {
+      const { product, variant } = findedProduct;
+  
+      cartItems.push({
+        id: product.id,
+        name: product.name,
+        price: variant.price,
+        image: product.image,
+        quantity,
+        variantId,
+      });
+
+    }
+
+    updateLocalStorageCartItems();
   }
 
   function removeProduct(options: RemoveProductOptions) {
@@ -66,6 +82,8 @@ export function Cart(cartOptions: CartOptions) {
     }
 
     cartItems.splice(productIndex, 1);
+
+    updateLocalStorageCartItems();
   }
 
   function changeProductQuantity(options: AddProductOptions) {
@@ -83,6 +101,8 @@ export function Cart(cartOptions: CartOptions) {
     }
 
     product.quantity = quantity;
+
+    updateLocalStorageCartItems();
   }
 
   function getTotal() {
@@ -113,22 +133,67 @@ export function Cart(cartOptions: CartOptions) {
   }
 
   function applyVoucher(code: string) {
-    const findedVoucher = vouchers.find(v => v.code === code);
+    const findedVoucher = findVoucher(code);
 
     if (!findedVoucher) {
       throw new Error(`Voucher with code ${code} not found`);
     }
 
     voucher = findedVoucher;
+
+    updateLocalStorageVoucher();
+  }
+
+  function removeVoucher() {
+    voucher = undefined;
+
+    updateLocalStorageVoucher();
+  }
+
+  function findVoucher(code: string) {
+    const findedVoucher = vouchers.find(v => v.code === code);
+
+    if (!findedVoucher) return undefined;
+
+    return findedVoucher;
   }
 
   function getVoucher(): Voucher | undefined {
     return voucher;
   }
 
+  function getLocalStorageCartItems(): CartItem[] {
+    const cartItems = localStorage.getItem("cartItems");
+
+    if (!cartItems) return [];
+
+    return JSON.parse(cartItems);
+  }
+
+  function updateLocalStorageCartItems() {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }
+
+  function getLocalStorageVoucher(): Voucher | undefined {
+    const voucher = localStorage.getItem("voucher");
+
+    if (!voucher) return undefined;
+
+    return findVoucher(voucher);
+  }
+
+  function updateLocalStorageVoucher() {
+    if (voucher) {
+      localStorage.setItem("voucher", voucher.code);
+    } else {
+      localStorage.removeItem("voucher");
+    }
+  }
+
   return {
     cartItems,
     getVoucher,
+    removeVoucher,
     addProduct,
     removeProduct,
     changeProductQuantity,

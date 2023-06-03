@@ -9,6 +9,7 @@ export type Product = {
   id: number;
   name: string;
   variants: ProductVariant[];
+  image: string;
 }
 
 export type CartItem = {
@@ -16,10 +17,3 @@ export type CartItem = {
   quantity: number;
   price: number;
 } & Omit<Product, 'variants'>;
-
-export enum ViewsEnum {
-  STOCK = 'stock',
-  CART = 'cart',
-}
-
-export type UpdateViewFunction = (view?: ViewsEnum) => void;

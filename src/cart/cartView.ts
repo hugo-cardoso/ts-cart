@@ -1,13 +1,10 @@
-import { Stock } from "./stock";
-import { Cart } from "./cart";
-
-import { UpdateViewFunction, ViewsEnum } from "./types";
+import { Stock } from "../global/stock";
+import { Cart } from "../global/cart";
 
 type CartViewOptions = {
   stock: ReturnType<typeof Stock>;
   cart: ReturnType<typeof Cart>;
   element: HTMLElement;
-  updateView: UpdateViewFunction;
 }
 
 export function CartView(cartViewOptions: CartViewOptions) {
@@ -42,7 +39,7 @@ export function CartView(cartViewOptions: CartViewOptions) {
           });
         }
 
-        cartViewOptions.updateView();
+        update();
       });
     });
 
@@ -66,7 +63,7 @@ export function CartView(cartViewOptions: CartViewOptions) {
           quantity: cartProduct.quantity + 1
         });
 
-        cartViewOptions.updateView();
+        update();
       });
     });
 
@@ -89,7 +86,7 @@ export function CartView(cartViewOptions: CartViewOptions) {
           variantId
         });
 
-        cartViewOptions.updateView();
+        update();
       });
     });
 
@@ -101,13 +98,20 @@ export function CartView(cartViewOptions: CartViewOptions) {
 
         cartViewOptions.cart.applyVoucher(voucher.value);
 
-        cartViewOptions.updateView(ViewsEnum.CART);
+        update();
       });
+    });
+
+    cartViewOptions.element.querySelector("#removeVoucher")?.addEventListener("click", () => {
+      cartViewOptions.cart.removeVoucher();
+
+      update();
     });
   }
 
   function update() {
     cartViewOptions.element.innerHTML = `
+      <a href="/">Home</a>
       <h2>Cart</h2>
     `;
 
@@ -115,6 +119,7 @@ export function CartView(cartViewOptions: CartViewOptions) {
       cartViewOptions.cart.cartItems.forEach(cartItem => {
         cartViewOptions.element.innerHTML += `
           <div class="card" data-productId="${cartItem.id}" data-variantId="${cartItem.variantId}">
+            <img width="100" src="${ cartItem.image }" />
             ${ cartItem.name } - ${ cartViewOptions.stock.getProductVariant(cartItem.id, cartItem.variantId).name } - R$ ${ cartItem.price }
             <button class="descrease">-</button>
             <span>${ cartItem.quantity }</span>
@@ -135,6 +140,11 @@ export function CartView(cartViewOptions: CartViewOptions) {
           <legend>Voucher</legend>
           <input class="voucher" value="${ cartViewOptions.cart.getVoucher()?.code || "" }" required/>
           <button type="submit">Apply</button>
+          ${
+            cartViewOptions.cart.getVoucher() ? `
+              <button type="button" id="removeVoucher">Remove</button>
+            ` : ``
+          }
         </fieldset>
       </form>
       <h3>Total: R$ ${ cartViewOptions.cart.getTotal() }</h3>

@@ -5,6 +5,7 @@ export function Stock() {
     {
       id: 1,
       name: "Camiseta",
+      image: "https://fakeimg.pl/400x400",
       variants: [
         {
           id: 1,
@@ -23,6 +24,7 @@ export function Stock() {
     {
       id: 2,
       name: "Blusa",
+      image: "https://fakeimg.pl/400x400",
       variants: [
         {
           id: 1,
